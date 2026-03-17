@@ -6,7 +6,6 @@ flowchart TD
     A --> D[DHT11 Monitors Environment]
 
     B --> E[ESP8266]
-    C --> E
     D --> E
 
     E --> F{Intruder Confirmed?}
