@@ -1,0 +1,27 @@
+{
+  "sensors": {
+    "ultrasonic": 150,
+    "temperature": 28.5,
+    "humidity": 65,
+    "signal": 90,
+    "zone_id": "zone1"
+  },
+  "devices_test": {
+    "led_status": true,
+    "buzzer_status": false,
+    "servo_status": false
+  },
+  "intruder_alert": {
+    "id": "intruder_test_001",
+    "zone_id": "zone1",
+    "timestamp": "2026-04-07T10:30:00",
+    "confidence": 0.95,
+    "details": "Test intruder detection from dummy data"
+  },
+  "alert": {
+    "zone_id": "zone2",
+    "alert_type": "MOTION",
+    "severity": "HIGH",
+    "details": "Test alert from dummy data"
+  }
+}

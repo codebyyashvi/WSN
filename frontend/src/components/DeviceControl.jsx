@@ -1,4 +1,36 @@
-export default function DeviceControl({ devices }) {
+import { useState } from 'react'
+import api from '../services/api'
+
+export default function DeviceControl({ devices, setDevices }) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const toggleDevice = async (deviceType) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const newState = !devices?.[`${deviceType}_status`]
+      
+      if (deviceType === 'led') {
+        await api.controlLED(newState)
+      } else if (deviceType === 'buzzer') {
+        await api.controlBuzzer(newState)
+      } else if (deviceType === 'servo') {
+        await api.controlServo(newState)
+      }
+
+      setDevices(prev => ({
+        ...prev,
+        [`${deviceType}_status`]: newState
+      }))
+    } catch (err) {
+      console.error(`Failed to control ${deviceType}:`, err)
+      setError(`Failed to control ${deviceType}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="bg-gradient-to-br from-slate-900/60 to-slate-950/60 rounded-xl shadow-xl p-6 border border-slate-800/50 backdrop-blur-sm">
       <div className="mb-6 pb-4 border-b border-slate-800/50">
@@ -9,13 +41,21 @@ export default function DeviceControl({ devices }) {
         <p className="text-xs text-slate-400 mt-1">Alert Response System</p>
       </div>
 
+      {error && (
+        <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 rounded text-sm text-red-200">
+          ⚠️ {error}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* LED Status */}
-        <div className={`rounded-lg p-5 border-2 transition-all ${
+        <div className={`rounded-lg p-5 border-2 transition-all cursor-pointer hover:shadow-lg ${
           devices?.led_status
             ? 'bg-gradient-to-br from-yellow-950/40 to-slate-900/40 border-yellow-500/60 shadow-lg shadow-yellow-500/20'
-            : 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border-slate-700/40'
-        }`}>
+            : 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border-slate-700/40 hover:border-slate-600/60'
+        }`}
+        onClick={() => toggleDevice('led')}
+        >
           <div className="flex items-center justify-between mb-3">
             <span className="text-3xl">💡</span>
             <span className={`text-xs font-bold px-2 py-1 rounded-full ${
@@ -27,18 +67,20 @@ export default function DeviceControl({ devices }) {
             </span>
           </div>
           <h4 className="font-semibold text-white mb-2">Warning LED</h4>
-          <div className={`w-full h-2 rounded-full ${
+          <div className={`w-full h-2 rounded-full transition-colors ${
             devices?.led_status ? 'bg-yellow-500' : 'bg-slate-700'
           }`}></div>
-          <p className="text-xs text-slate-400 mt-3">Visual Alert Indicator</p>
+          <p className="text-xs text-slate-400 mt-3">Click to toggle</p>
         </div>
 
         {/* Buzzer Status */}
-        <div className={`rounded-lg p-5 border-2 transition-all ${
+        <div className={`rounded-lg p-5 border-2 transition-all cursor-pointer hover:shadow-lg ${
           devices?.buzzer_status
             ? 'bg-gradient-to-br from-red-950/40 to-slate-900/40 border-red-500/60 shadow-lg shadow-red-500/20 animate-pulse'
-            : 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border-slate-700/40'
-        }`}>
+            : 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border-slate-700/40 hover:border-slate-600/60'
+        }`}
+        onClick={() => toggleDevice('buzzer')}
+        >
           <div className="flex items-center justify-between mb-3">
             <span className="text-3xl">🔔</span>
             <span className={`text-xs font-bold px-2 py-1 rounded-full ${
@@ -50,18 +92,20 @@ export default function DeviceControl({ devices }) {
             </span>
           </div>
           <h4 className="font-semibold text-white mb-2">Alarm Buzzer</h4>
-          <div className={`w-full h-2 rounded-full ${
+          <div className={`w-full h-2 rounded-full transition-colors ${
             devices?.buzzer_status ? 'bg-red-500' : 'bg-slate-700'
           }`}></div>
-          <p className="text-xs text-slate-400 mt-3">Audio Alert System</p>
+          <p className="text-xs text-slate-400 mt-3">Click to toggle</p>
         </div>
 
         {/* Servo/Motor Status */}
-        <div className={`rounded-lg p-5 border-2 transition-all ${
+        <div className={`rounded-lg p-5 border-2 transition-all cursor-pointer hover:shadow-lg ${
           devices?.servo_status
             ? 'bg-gradient-to-br from-cyan-950/40 to-slate-900/40 border-cyan-500/60 shadow-lg shadow-cyan-500/20'
-            : 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border-slate-700/40'
-        }`}>
+            : 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border-slate-700/40 hover:border-slate-600/60'
+        }`}
+        onClick={() => toggleDevice('servo')}
+        >
           <div className="flex items-center justify-between mb-3">
             <span className="text-3xl">⚙️</span>
             <span className={`text-xs font-bold px-2 py-1 rounded-full ${
@@ -87,7 +131,7 @@ export default function DeviceControl({ devices }) {
               ></div>
             ))}
           </div>
-          <p className="text-xs text-slate-400 mt-2">Rotational Direction Tracking</p>
+          <p className="text-xs text-slate-400 mt-2">Click to toggle</p>
         </div>
       </div>
 
@@ -117,6 +161,12 @@ export default function DeviceControl({ devices }) {
           )}
         </div>
       </div>
+
+      {loading && (
+        <div className="mt-4 p-3 bg-blue-900/30 border border-blue-500/50 rounded text-sm text-blue-200">
+          ⏳ Updating device status...
+        </div>
+      )}
     </div>
   )
 }

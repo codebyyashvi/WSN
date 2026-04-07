@@ -5,6 +5,7 @@ import DetectionStatus from './DetectionStatus'
 import DeviceControl from './DeviceControl'
 import IntruderAlerts from './IntruderAlerts'
 import FarmMap from './FarmMap'
+import api from '../services/api'
 
 export default function Dashboard() {
   const [sensorData, setSensorData] = useState({
@@ -31,114 +32,158 @@ export default function Dashboard() {
   const [intruders, setIntruders] = useState([])
   const [isDetected, setIsDetected] = useState(false)
   const [lastDetectionTime, setLastDetectionTime] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // Simulate sensor data updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Simulate sensor readings
-      const newUltrasonic = Math.random() * 300
-      const newTemp = 25 + Math.random() * 10
-      const newHumidity = 50 + Math.random() * 30
-      const newSignal = 85 + Math.random() * 15
+  // Fetch dashboard data from backend
+  const fetchDashboardData = async () => {
+    try {
+      const [dashboardData, intrudersData, zonesData] = await Promise.all([
+        api.getDashboard(),
+        api.getIntruders(),
+        api.getZones()
+      ])
 
-      setSensorData({
-        ultrasonic: Math.round(newUltrasonic),
-        temperature: Math.round(newTemp * 10) / 10,
-        humidity: Math.round(newHumidity),
-        signal: Math.round(newSignal)
-      })
-
-      // Check for intrusion (ultrasonic < 50cm)
-      if (newUltrasonic < 50) {
-        setIsDetected(true)
-        setDevices({
-          led_status: true,
-          buzzer_status: true,
-          servo_status: true
-        })
-        setLastDetectionTime(new Date())
-
-        // Add alert if not already exists
-        if (intruders.length === 0) {
-          const detectedZone = `zone${Math.floor(Math.random() * 5) + 1}`
-          const newAlert = {
-            id: Date.now(),
-            zone: detectedZone,
-            timestamp: new Date(),
-            severity: 'CRITICAL',
-            distance: Math.round(newUltrasonic)
-          }
-          setIntruders([newAlert])
-          // Update zone data
-          setZoneData(prev => ({
-            ...prev,
-            [detectedZone]: 'INTRUDER DETECTED'
-          }))
-        }
-      } else {
-        setIsDetected(false)
-        setDevices({
-          led_status: false,
-          buzzer_status: false,
-          servo_status: false
-        })
-        setIntruders([])
-        // Reset zones
-        setZoneData({
-          zone1: 'OK',
-          zone2: 'OK',
-          zone3: 'OK',
-          zone4: 'OK',
-          zone5: 'OK'
+      // Update sensors
+      if (dashboardData.sensors) {
+        setSensorData({
+          ultrasonic: dashboardData.sensors.ultrasonic,
+          temperature: dashboardData.sensors.temperature,
+          humidity: dashboardData.sensors.humidity,
+          signal: dashboardData.sensors.signal
         })
       }
-    }, 3000)
 
-    return () => clearInterval(interval)
-  }, [intruders.length])
+      // Update devices
+      if (dashboardData.devices) {
+        setDevices({
+          led_status: dashboardData.devices.led_status,
+          buzzer_status: dashboardData.devices.buzzer_status,
+          servo_status: dashboardData.devices.servo_status
+        })
+      }
 
-  const clearAlerts = () => {
-    setIntruders([])
-    setIsDetected(false)
-    setDevices({
-      led_status: false,
-      buzzer_status: false,
-      servo_status: false
-    })
-    setZoneData({
-      zone1: 'OK',
-      zone2: 'OK',
-      zone3: 'OK',
-      zone4: 'OK',
-      zone5: 'OK'
-    })
+      // Update zones
+      if (zonesData.zones) {
+        const zoneMapping = {}
+        Object.entries(zonesData.zones).forEach(([zoneId, zoneInfo]) => {
+          zoneMapping[zoneId] = zoneInfo.status
+        })
+        setZoneData(zoneMapping)
+      }
+
+      // Update intruders
+      if (intrudersData.intruders && intrudersData.intruders.length > 0) {
+        setIntruders(intrudersData.intruders)
+        setIsDetected(true)
+        setLastDetectionTime(new Date(intrudersData.intruders[0].timestamp))
+      } else {
+        setIntruders([])
+        setIsDetected(false)
+      }
+
+      setError(null)
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleZoneClick = (zone) => {
-    setZoneData(prev => ({
-      ...prev,
-      [zone]: 'INTRUDER DETECTED'
-    }))
-    const newAlert = {
-      id: Date.now(),
-      zone: zone,
-      timestamp: new Date(),
-      severity: 'CRITICAL',
-      distance: Math.round(Math.random() * 30)
+  // Fetch data on mount and set up polling
+  useEffect(() => {
+    fetchDashboardData()
+    const interval = setInterval(fetchDashboardData, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Clear all intruder alerts from backend
+  const clearAlerts = async () => {
+    try {
+      await api.clearAllIntruders()
+      await api.controlDevices({
+        led_status: false,
+        buzzer_status: false,
+        servo_status: false
+      })
+      setIntruders([])
+      setIsDetected(false)
+      setDevices({
+        led_status: false,
+        buzzer_status: false,
+        servo_status: false
+      })
+      setZoneData({
+        zone1: 'OK',
+        zone2: 'OK',
+        zone3: 'OK',
+        zone4: 'OK',
+        zone5: 'OK'
+      })
+    } catch (err) {
+      console.error('Failed to clear alerts:', err)
+      setError('Failed to clear alerts')
     }
-    setIntruders([newAlert])
-    setIsDetected(true)
-    setDevices({
-      led_status: true,
-      buzzer_status: true,
-      servo_status: true
-    })
-    setLastDetectionTime(new Date())
+  }
+
+  // Handle manual zone click
+  const handleZoneClick = async (zone) => {
+    try {
+      const newAlert = {
+        id: `intruder_${Date.now()}`,
+        zone_id: zone,
+        timestamp: new Date().toISOString(),
+        confidence: 0.95,
+        details: 'Manual alert triggered'
+      }
+      
+      await api.reportIntruder(newAlert)
+      await api.controlDevices({
+        led_status: true,
+        buzzer_status: true,
+        servo_status: true
+      })
+      
+      setIsDetected(true)
+      setLastDetectionTime(new Date())
+      
+      // Refresh dashboard data
+      fetchDashboardData()
+    } catch (err) {
+      console.error('Failed to report intruder:', err)
+      setError('Failed to report intruder')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading dashboard...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
       <DashboardHeader farmSecure={!isDetected} />
+      
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-4 text-red-200">
+            <p className="text-sm">⚠️ {error}</p>
+            <button 
+              onClick={fetchDashboardData}
+              className="text-xs mt-2 px-3 py-1 bg-red-700 hover:bg-red-600 rounded"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Detection Status - Full Width */}
@@ -149,7 +194,7 @@ export default function Dashboard() {
           {/* Left Column - Sensors & Devices */}
           <div className="lg:col-span-2 space-y-6">
             <SensorMonitoring sensorData={sensorData} />
-            <DeviceControl devices={devices} />
+            <DeviceControl devices={devices} setDevices={setDevices} />
           </div>
 
           {/* Right Column - Alerts & Controls */}
@@ -178,7 +223,7 @@ export default function Dashboard() {
                   </span>
                 </button>
                 <button
-                  onClick={() => window.location.reload()}
+                  onClick={fetchDashboardData}
                   className="w-full group relative overflow-hidden rounded-lg font-semibold py-3 px-4 transition-all duration-300"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:shadow-lg group-hover:shadow-blue-600/50 transition-all"></div>
