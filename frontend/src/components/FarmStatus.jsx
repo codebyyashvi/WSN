@@ -10,15 +10,15 @@ export default function FarmStatus({ farmSecure, intruderCount }) {
           <div className="flex items-center gap-3 mb-2">
             <span className={`text-3xl ${farmSecure ? '✓' : '⚠'}`}></span>
             <h2 className="text-3xl font-bold text-white tracking-tight">
-              {farmSecure ? 'FARM SECURE' : 'SECURITY BREACH DETECTED'}
+              {farmSecure ? 'ARTIFACTS SECURE' : 'THEFT ALERT - BREACH DETECTED'}
             </h2>
           </div>
           <p className={`text-base font-medium ${
             farmSecure ? 'text-emerald-300/80' : 'text-rose-300/80'
           }`}>
             {farmSecure 
-              ? 'All sensors operational • Zero threats detected • System nominal'
-              : `CRITICAL: ${intruderCount} unauthorized intruder(s) detected on premises`
+              ? 'All monitoring systems operational • No unauthorized access • Collection protected'
+              : `CRITICAL: ${intruderCount} unauthorized access attempt(s) detected`
             }
           </p>
         </div>
@@ -27,16 +27,16 @@ export default function FarmStatus({ farmSecure, intruderCount }) {
             ? 'bg-emerald-500/20 text-emerald-300' 
             : 'bg-rose-500/20 text-rose-300 animate-bounce'
         }`}>
-          {farmSecure ? '🛡️' : '🚨'}
+          {farmSecure ? '🏛️' : '🚨'}
         </div>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
         {[
-          { label: 'Active Sensors', value: '5', icon: '📡' },
-          { label: 'Coverage Area', value: '100%', icon: '🗺️' },
-          { label: 'Threats Detected', value: intruderCount, icon: '⚠️', critical: intruderCount > 0 },
+          { label: 'Sensor Nodes', value: '5', icon: '📡' },
+          { label: 'Gallery Coverage', value: '100%', icon: '🏛️' },
+          { label: 'Intrusions Detected', value: intruderCount, icon: '🚨', critical: intruderCount > 0 },
           { label: 'System Status', value: 'LIVE', icon: '✓', online: true }
         ].map((stat, idx) => (
           <div key={idx} className={`rounded-lg p-4 border backdrop-blur-sm transition-all hover:scale-105 ${

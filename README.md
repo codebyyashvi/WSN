@@ -1,22 +1,20 @@
-# WSN
-```mermaid
 %%{init: {'theme': 'base'}}%%
 flowchart TD
-    A[Intruder Enters Farm] --> B[Ultrasonic Sensor Detects]
-    A --> D[DHT11 Monitors Environment]
+    A[Artifact Movement / Unauthorized Access] --> B[Ultrasonic / Motion Sensor Detects]
+    A --> D[DHT11 Monitors Temperature & Humidity]
 
     B --> E[ESP8266]
     D --> E
 
-    E --> F{Intruder Confirmed?}
+    E --> F{Theft Suspicion Confirmed?}
 
     F -- No --> G[Continue Monitoring]
 
-    F -- Yes --> H[LED Turns ON]
-    F -- Yes --> I[Buzzer Activated]
-    F -- Yes --> J[Servo Rotates Camera/Direction]
+    F -- Yes --> H[LED Alert Turns ON]
+    F -- Yes --> I[Buzzer Alarm Activated]
+    F -- Yes --> J[Servo Rotates Camera Towards Artifact]
 
-    E --> K[ESP8266 Sends Data to Server]
+    E --> K[ESP8266 Sends Alert Data to Server]
     K --> L[Website Dashboard Updates]
 
-    L --> M[User Views Intruder on Phone]
+    L --> M[Security Personnel Notified on Phone]

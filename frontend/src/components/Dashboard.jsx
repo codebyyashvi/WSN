@@ -5,7 +5,6 @@ import DetectionStatus from './DetectionStatus'
 import DeviceControl from './DeviceControl'
 import IntruderAlerts from './IntruderAlerts'
 import FarmMap from './FarmMap'
-import api from '../services/api'
 
 export default function Dashboard() {
   const [sensorData, setSensorData] = useState({
@@ -32,128 +31,101 @@ export default function Dashboard() {
   const [intruders, setIntruders] = useState([])
   const [isDetected, setIsDetected] = useState(false)
   const [lastDetectionTime, setLastDetectionTime] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // Fetch dashboard data from backend
-  const fetchDashboardData = async () => {
-    try {
-      const [dashboardData, intrudersData, zonesData] = await Promise.all([
-        api.getDashboard(),
-        api.getIntruders(),
-        api.getZones()
-      ])
+  // Generate random sensor values (with occasional threat detection)
+  const generateRandomSensorData = () => ({
+    ultrasonic: Math.random() < 0.4 ? Math.floor(Math.random() * 40) + 10 : Math.floor(Math.random() * 200) + 51, // 40% chance of alert (10-50cm), 60% safe (51-250cm)
+    temperature: Math.floor(Math.random() * 8) + 18,
+    humidity: Math.floor(Math.random() * 40) + 30,
+    signal: Math.floor(Math.random() * 30) + 70
+  })
 
-      // Update sensors
-      if (dashboardData.sensors) {
-        setSensorData({
-          ultrasonic: dashboardData.sensors.ultrasonic,
-          temperature: dashboardData.sensors.temperature,
-          humidity: dashboardData.sensors.humidity,
-          signal: dashboardData.sensors.signal
-        })
-      }
-
-      // Update devices
-      if (dashboardData.devices) {
-        setDevices({
-          led_status: dashboardData.devices.led_status,
-          buzzer_status: dashboardData.devices.buzzer_status,
-          servo_status: dashboardData.devices.servo_status
-        })
-      }
-
-      // Update zones
-      if (zonesData.zones) {
-        const zoneMapping = {}
-        Object.entries(zonesData.zones).forEach(([zoneId, zoneInfo]) => {
-          zoneMapping[zoneId] = zoneInfo.status
-        })
-        setZoneData(zoneMapping)
-      }
-
-      // Update intruders
-      if (intrudersData.intruders && intrudersData.intruders.length > 0) {
-        setIntruders(intrudersData.intruders)
-        setIsDetected(true)
-        setLastDetectionTime(new Date(intrudersData.intruders[0].timestamp))
-      } else {
-        setIntruders([])
-        setIsDetected(false)
-      }
-
-      setError(null)
-    } catch (err) {
-      console.error('Failed to fetch dashboard data:', err)
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Fetch data on mount and set up polling
+  // Initialize with mock data and set up periodic updates
   useEffect(() => {
-    fetchDashboardData()
-    const interval = setInterval(fetchDashboardData, 3000)
+    // Set initial random data
+    setSensorData(generateRandomSensorData())
+    setLoading(false)
+
+    // Update sensor data every 3 seconds
+    const interval = setInterval(() => {
+      const newSensorData = generateRandomSensorData()
+      setSensorData(newSensorData)
+
+      // ONLY check ultrasonic/proximity - NO temperature or humidity checks
+      if (newSensorData.ultrasonic < 50) {
+        // Show alert only when proximity is strictly less than 50cm
+        const threatAlert = {
+          id: `auto_threat_${Date.now()}`,
+          zone_id: `zone${Math.floor(Math.random() * 5) + 1}`,
+          timestamp: new Date().toISOString(),
+          confidence: 0.99,
+          severity: 'CRITICAL',
+          distance: newSensorData.ultrasonic
+        }
+        setIntruders([threatAlert])
+        setIsDetected(true)
+        setLastDetectionTime(new Date())
+        // Activate all devices when alert triggered
+        setDevices({
+          led_status: true,
+          buzzer_status: true,
+          servo_status: true
+        })
+        // Update all zones to ALERT when proximity threat detected
+        setZoneData({
+          zone1: 'ALERT',
+          zone2: 'ALERT',
+          zone3: 'ALERT',
+          zone4: 'ALERT',
+          zone5: 'ALERT'
+        })
+      } else {
+        // Clear all alerts when proximity is 50cm or more
+        setIsDetected(false)
+        setIntruders([])
+        setDevices({
+          led_status: false,
+          buzzer_status: false,
+          servo_status: false
+        })
+        // Reset all zones to OK
+        setZoneData({
+          zone1: 'OK',
+          zone2: 'OK',
+          zone3: 'OK',
+          zone4: 'OK',
+          zone5: 'OK'
+        })
+      }
+    }, 3000)
+
     return () => clearInterval(interval)
   }, [])
 
-  // Clear all intruder alerts from backend
-  const clearAlerts = async () => {
-    try {
-      await api.clearAllIntruders()
-      await api.controlDevices({
-        led_status: false,
-        buzzer_status: false,
-        servo_status: false
-      })
-      setIntruders([])
-      setIsDetected(false)
-      setDevices({
-        led_status: false,
-        buzzer_status: false,
-        servo_status: false
-      })
-      setZoneData({
-        zone1: 'OK',
-        zone2: 'OK',
-        zone3: 'OK',
-        zone4: 'OK',
-        zone5: 'OK'
-      })
-    } catch (err) {
-      console.error('Failed to clear alerts:', err)
-      setError('Failed to clear alerts')
-    }
+  // Clear all alerts locally
+  const clearAlerts = () => {
+    setIntruders([])
+    setIsDetected(false)
+    setDevices({
+      led_status: false,
+      buzzer_status: false,
+      servo_status: false
+    })
+    setZoneData({
+      zone1: 'OK',
+      zone2: 'OK',
+      zone3: 'OK',
+      zone4: 'OK',
+      zone5: 'OK'
+    })
+    setError(null)
   }
 
-  // Handle manual zone click
-  const handleZoneClick = async (zone) => {
-    try {
-      const newAlert = {
-        id: `intruder_${Date.now()}`,
-        zone_id: zone,
-        timestamp: new Date().toISOString(),
-        confidence: 0.95,
-        details: 'Manual alert triggered'
-      }
-      
-      await api.reportIntruder(newAlert)
-      await api.controlDevices({
-        led_status: true,
-        buzzer_status: true,
-        servo_status: true
-      })
-      
-      setIsDetected(true)
-      setLastDetectionTime(new Date())
-      
-      // Refresh dashboard data
-      fetchDashboardData()
-    } catch (err) {
-      console.error('Failed to report intruder:', err)
-      setError('Failed to report intruder')
-    }
+  // Handle manual zone click - disabled, alerts only from proximity sensor
+  const handleZoneClick = (zone) => {
+    // Alerts are now only triggered by proximity sensor (ultrasonic <= 50cm)
   }
 
   if (loading) {
@@ -223,7 +195,10 @@ export default function Dashboard() {
                   </span>
                 </button>
                 <button
-                  onClick={fetchDashboardData}
+                  onClick={() => {
+                    // Refresh button - can add local actions here
+                    setError(null)
+                  }}
                   className="w-full group relative overflow-hidden rounded-lg font-semibold py-3 px-4 transition-all duration-300"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:shadow-lg group-hover:shadow-blue-600/50 transition-all"></div>
@@ -238,7 +213,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Farm Map - Full Width */}
+        {/* Museum Floor Plan - Full Width */}
         <FarmMap sensorData={zoneData} onZoneClick={handleZoneClick} />
       </div>
     </div>

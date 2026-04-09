@@ -1,24 +1,13 @@
 import { useState } from 'react'
-import api from '../services/api'
 
 export default function DeviceControl({ devices, setDevices }) {
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const toggleDevice = async (deviceType) => {
-    setLoading(true)
+  const toggleDevice = (deviceType) => {
     setError(null)
     try {
       const newState = !devices?.[`${deviceType}_status`]
       
-      if (deviceType === 'led') {
-        await api.controlLED(newState)
-      } else if (deviceType === 'buzzer') {
-        await api.controlBuzzer(newState)
-      } else if (deviceType === 'servo') {
-        await api.controlServo(newState)
-      }
-
       setDevices(prev => ({
         ...prev,
         [`${deviceType}_status`]: newState
@@ -26,8 +15,6 @@ export default function DeviceControl({ devices, setDevices }) {
     } catch (err) {
       console.error(`Failed to control ${deviceType}:`, err)
       setError(`Failed to control ${deviceType}`)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -36,9 +23,9 @@ export default function DeviceControl({ devices, setDevices }) {
       <div className="mb-6 pb-4 border-b border-slate-800/50">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <span className="text-2xl">🎛️</span>
-          Active Devices
+          Security Devices
         </h3>
-        <p className="text-xs text-slate-400 mt-1">Alert Response System</p>
+        <p className="text-xs text-slate-400 mt-1">Emergency Response Controls</p>
       </div>
 
       {error && (
@@ -66,7 +53,7 @@ export default function DeviceControl({ devices, setDevices }) {
               {devices?.led_status ? 'ON' : 'OFF'}
             </span>
           </div>
-          <h4 className="font-semibold text-white mb-2">Warning LED</h4>
+          <h4 className="font-semibold text-white mb-2">Alert Lights</h4>
           <div className={`w-full h-2 rounded-full transition-colors ${
             devices?.led_status ? 'bg-yellow-500' : 'bg-slate-700'
           }`}></div>
@@ -91,7 +78,7 @@ export default function DeviceControl({ devices, setDevices }) {
               {devices?.buzzer_status ? 'ON' : 'OFF'}
             </span>
           </div>
-          <h4 className="font-semibold text-white mb-2">Alarm Buzzer</h4>
+          <h4 className="font-semibold text-white mb-2">Emergency Siren</h4>
           <div className={`w-full h-2 rounded-full transition-colors ${
             devices?.buzzer_status ? 'bg-red-500' : 'bg-slate-700'
           }`}></div>
@@ -161,12 +148,6 @@ export default function DeviceControl({ devices, setDevices }) {
           )}
         </div>
       </div>
-
-      {loading && (
-        <div className="mt-4 p-3 bg-blue-900/30 border border-blue-500/50 rounded text-sm text-blue-200">
-          ⏳ Updating device status...
-        </div>
-      )}
     </div>
   )
 }

@@ -5,15 +5,15 @@ export default function DashboardHeader({ farmSecure }) {
         <div className="flex items-center justify-between">
           {/* Logo Section */}
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-xl font-bold text-white">🛡</span>
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
+              <span className="text-xl font-bold text-white">🏛️</span>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Farm Guardian</h1>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Museum Guardian</h1>
                 <span className="text-xs px-2 py-1 bg-slate-800/50 rounded-full text-slate-300 border border-slate-700/50">v1.0</span>
               </div>
-              <p className="text-sm text-slate-400 mt-0.5">Advanced Intruder Detection System</p>
+              <p className="text-sm text-slate-400 mt-0.5">Advanced Artifact Protection System</p>
             </div>
           </div>
           

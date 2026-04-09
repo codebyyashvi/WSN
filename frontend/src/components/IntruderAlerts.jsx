@@ -4,11 +4,11 @@ export default function IntruderAlerts({ intruders }) {
   }
 
   const zoneLabels = {
-    zone1: 'North Gate',
-    zone2: 'East Fence',
-    zone3: 'Main Area',
-    zone4: 'West Perimeter',
-    zone5: 'South Sector'
+    zone1: 'Ancient Egypt Wing',
+    zone2: 'Jewelry Vault',
+    zone3: 'Main Gallery',
+    zone4: 'Renaissance Gallery',
+    zone5: 'Precious Stones Hall'
   }
 
   return (
@@ -18,8 +18,8 @@ export default function IntruderAlerts({ intruders }) {
         <div className="flex items-center gap-3">
           <span className="text-2xl animate-pulse">🚨</span>
           <div>
-            <h3 className="text-lg font-bold text-white">Alert Log</h3>
-            <p className="text-xs text-slate-500">Intrusion Events</p>
+            <h3 className="text-lg font-bold text-white">Security Alerts</h3>
+            <p className="text-xs text-slate-500">Unauthorized Access Events</p>
           </div>
         </div>
         {intruders.length > 0 && (
@@ -34,8 +34,8 @@ export default function IntruderAlerts({ intruders }) {
         {intruders.length === 0 ? (
           <div className="text-center py-12 flex flex-col items-center justify-center h-full">
             <span className="text-4xl mb-3">✓</span>
-            <p className="text-slate-400 font-medium">No Intrusions</p>
-            <p className="text-slate-600 text-sm mt-1">Farm is secure</p>
+            <p className="text-slate-400 font-medium">All Clear</p>
+            <p className="text-slate-600 text-sm mt-1">Artifacts are protected</p>
           </div>
         ) : (
           intruders.map((intruder) => (
@@ -73,9 +73,9 @@ export default function IntruderAlerts({ intruders }) {
           <div className="bg-amber-950/40 border border-amber-600/50 rounded-lg p-3 flex items-start gap-3">
             <span className="text-lg min-w-fit">⚠️</span>
             <div>
-              <p className="text-amber-300 text-xs font-semibold uppercase tracking-wide">Immediate Action</p>
+              <p className="text-amber-300 text-xs font-semibold uppercase tracking-wide">Theft Alert Active</p>
               <p className="text-amber-200/70 text-xs mt-1">
-                Intruder detected on farm. Alert system activated: LED, Buzzer, and Servo Motor (rotating to track intruder).
+                Unauthorized access detected. Security systems engaged: LED indicators active, Alarm sounding, and surveillance cameras tracking.
               </p>
             </div>
           </div>

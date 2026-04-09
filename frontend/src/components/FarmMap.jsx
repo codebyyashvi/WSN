@@ -1,10 +1,10 @@
 export default function FarmMap({ sensorData, onZoneClick }) {
   const zones = [
-    { id: 'zone1', label: 'North Gate', position: 'top-6 left-6', icon: '🔵' },
-    { id: 'zone2', label: 'East Fence', position: 'top-6 right-6', icon: '🔵' },
-    { id: 'zone3', label: 'Main Area', position: 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2', icon: '◉' },
-    { id: 'zone4', label: 'West Perimeter', position: 'bottom-6 left-6', icon: '🔵' },
-    { id: 'zone5', label: 'South Sector', position: 'bottom-6 right-6', icon: '🔵' }
+    { id: 'zone1', label: 'Ancient Egypt Wing', position: 'top-6 left-6', icon: '🔵' },
+    { id: 'zone2', label: 'Jewelry Vault', position: 'top-6 right-6', icon: '🔵' },
+    { id: 'zone3', label: 'Main Gallery', position: 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2', icon: '◉' },
+    { id: 'zone4', label: 'Renaissance Gallery', position: 'bottom-6 left-6', icon: '🔵' },
+    { id: 'zone5', label: 'Precious Stones Hall', position: 'bottom-6 right-6', icon: '🔵' }
   ]
 
   const getZoneStatus = (zoneId) => {
@@ -35,12 +35,12 @@ export default function FarmMap({ sensorData, onZoneClick }) {
         <h3 className="text-lg font-bold text-white flex items-center gap-3">
           <span className="text-2xl">🗺️</span>
           <div>
-            <p>Perimeter Security Map</p>
-            <p className="text-xs font-normal text-slate-400 mt-0.5">Real-time Sensor Monitoring</p>
+            <p>Museum Floor Plan</p>
+            <p className="text-xs font-normal text-slate-400 mt-0.5">Real-time Artifact Monitoring</p>
           </div>
         </h3>
         <div className="px-3 py-1 bg-emerald-500/20 border border-emerald-500/40 rounded text-xs text-emerald-300 font-semibold">
-          5 Zones Active
+          5 Galleries Protected
         </div>
       </div>
 
@@ -56,10 +56,10 @@ export default function FarmMap({ sensorData, onZoneClick }) {
           <rect width="100%" height="100%" fill="url(#grid)" />
         </svg>
 
-        {/* Farm Boundary with Glow */}
-        <div className="absolute inset-8 border-2 border-blue-500/20 rounded-xl shadow-lg shadow-blue-500/10 pointer-events-none"></div>
+        {/* Museum Boundary with Glow */}
+        <div className="absolute inset-8 border-2 border-purple-500/20 rounded-xl shadow-lg shadow-purple-500/10 pointer-events-none"></div>
 
-        {/* Sensor Zones */}
+        {/* Gallery Zones */}
         {zones.map((zone) => {
           const status = getZoneStatus(zone.id)
           return (
@@ -81,23 +81,23 @@ export default function FarmMap({ sensorData, onZoneClick }) {
                   {zone.label}
                 </span>
                 <span className="text-xs opacity-90">
-                  {sensorData[zone.id] === 'OK' ? '✓ ONLINE' : '⚠ BREACH'}
+                  {sensorData[zone.id] === 'OK' ? '✓ SECURE' : '🚨 ALERT'}
                 </span>
               </div>
               {/* Hover Tooltip */}
               <div className="absolute bottom-full mb-2 bg-slate-950/95 border border-slate-700/50 rounded px-2 py-1 text-xs text-slate-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                {sensorData[zone.id] === 'OK' ? 'Status: Secure' : 'Status: Intrusion Detected'}
+                {sensorData[zone.id] === 'OK' ? 'Gallery Protected' : 'Unauthorized Access'}
               </div>
             </button>
           )
         })}
 
-        {/* Center Farm Building with Enhanced Design */}
+        {/* Center Museum Building with Enhanced Design */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
           <div className="relative">
-            <div className="absolute inset-0 bg-amber-500/30 blur-lg rounded-lg"></div>
-            <div className="relative w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 border-2 border-amber-400 rounded-lg flex items-center justify-center shadow-xl shadow-amber-500/40">
-              <span className="text-3xl">🏢</span>
+            <div className="absolute inset-0 bg-purple-500/30 blur-lg rounded-lg"></div>
+            <div className="relative w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 border-2 border-purple-400 rounded-lg flex items-center justify-center shadow-xl shadow-purple-500/40">
+              <span className="text-3xl">🏛️</span>
             </div>
           </div>
         </div>
