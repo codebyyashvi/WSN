@@ -150,6 +150,28 @@ export const getDashboardSummary = async () => {
   return apiFetch('/dashboard/summary');
 };
 
+// ===== COLLECTED DATA ENDPOINTS =====
+
+export const getCollectedData = async () => {
+  return apiFetch('/collected-data');
+};
+
+export const getCollectedZones = async () => {
+  return apiFetch('/collected-data/zones');
+};
+
+export const getCollectedZoneData = async (zoneId) => {
+  return apiFetch(`/collected-data/zones/${zoneId}`);
+};
+
+export const getCollectedIntruders = async () => {
+  return apiFetch('/collected-data/intruders');
+};
+
+export const getCollectedSummary = async () => {
+  return apiFetch('/collected-data/summary');
+};
+
 // ===== HEALTH CHECK =====
 
 export const healthCheck = async () => {
@@ -177,5 +199,10 @@ export default {
   clearAlert,
   getDashboard,
   getDashboardSummary,
+  getCollectedData,
+  getCollectedZones,
+  getCollectedZoneData,
+  getCollectedIntruders,
+  getCollectedSummary,
   healthCheck,
 };

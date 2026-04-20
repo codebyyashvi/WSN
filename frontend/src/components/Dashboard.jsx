@@ -5,6 +5,7 @@ import DetectionStatus from './DetectionStatus'
 import DeviceControl from './DeviceControl'
 import IntruderAlerts from './IntruderAlerts'
 import FarmMap from './FarmMap'
+import CollectedDataViewer from './CollectedDataViewer'
 
 export default function Dashboard() {
   const [sensorData, setSensorData] = useState({
@@ -215,6 +216,9 @@ export default function Dashboard() {
 
         {/* Museum Floor Plan - Full Width */}
         <FarmMap sensorData={zoneData} onZoneClick={handleZoneClick} />
+
+        {/* Collected Data Viewer - Full Width */}
+        <CollectedDataViewer />
       </div>
     </div>
   )

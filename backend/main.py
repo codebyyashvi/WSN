@@ -70,22 +70,89 @@ class AlertData(BaseModel):
 
 # ============= IN-MEMORY DATABASE =============
 
-sensors_db = {
-    "ultrasonic": 150,
-    "temperature": 28,
-    "humidity": 65,
-    "signal": 95,
-    "timestamp": datetime.now(),
-    "zone_id": None
-}
+# Load collected data from JSON file
+def load_collected_data():
+    """Load collected sensor data from JSON file"""
+    try:
+        json_path = os.path.join(os.path.dirname(__file__), "sensor_data_collected.json")
+        with open(json_path, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
 
-zones_db = {
-    "zone1": {"status": "OK", "lastAlert": None, "name": "North Gate"},
-    "zone2": {"status": "OK", "lastAlert": None, "name": "East Fence"},
-    "zone3": {"status": "OK", "lastAlert": None, "name": "Main Area"},
-    "zone4": {"status": "OK", "lastAlert": None, "name": "West Perimeter"},
-    "zone5": {"status": "OK", "lastAlert": None, "name": "South Sector"}
-}
+# Initialize with collected data
+collected_data = load_collected_data()
+
+# Initialize sensors_db from latest collected reading
+def init_sensors_from_collected():
+    if collected_data and collected_data.get('zones'):
+        # Get the latest reading from the first zone
+        latest_zone = collected_data['zones'][0]
+        latest_readings = latest_zone.get('readings', [])
+        if latest_readings:
+            latest = latest_readings[-1]
+            return {
+                "ultrasonic": latest.get("ultrasonic", 150),
+                "temperature": latest.get("temperature", 28),
+                "humidity": latest.get("humidity", 65),
+                "signal": latest.get("signal", 95),
+                "timestamp": datetime.now(),
+                "zone_id": latest_zone.get("zone_id", "zone1")
+            }
+    return {
+        "ultrasonic": 150,
+        "temperature": 28,
+        "humidity": 65,
+        "signal": 95,
+        "timestamp": datetime.now(),
+        "zone_id": None
+    }
+
+sensors_db = init_sensors_from_collected()
+
+# Initialize zones from collected data
+def init_zones_from_collected():
+    zones = {
+        "zone1": {"status": "OK", "lastAlert": None, "name": "North Boundary"},
+        "zone2": {"status": "OK", "lastAlert": None, "name": "East Gate"},
+        "zone3": {"status": "OK", "lastAlert": None, "name": "West Storage"},
+        "zone4": {"status": "OK", "lastAlert": None, "name": "South Sector"},
+        "zone5": {"status": "OK", "lastAlert": None, "name": "Central Area"}
+    }
+    
+    if collected_data and collected_data.get('zones'):
+        for zone in collected_data['zones']:
+            zone_id = zone.get('zone_id')
+            zone_name = zone.get('zone_name', 'Unknown')
+            # Check if any reading in this zone is ALERT
+            readings = zone.get('readings', [])
+            has_alert = any(r.get('status') == 'ALERT' for r in readings)
+            
+            if zone_id and zone_id in zones:
+                zones[zone_id]['name'] = zone_name
+                zones[zone_id]['status'] = 'ALERT' if has_alert else 'OK'
+    
+    return zones
+
+zones_db = init_zones_from_collected()
+
+# Initialize intruders from collected data
+def init_intruders_from_collected():
+    intruders = []
+    if collected_data and collected_data.get('intruder_detections'):
+        for intruder in collected_data['intruder_detections']:
+            intruders.append({
+                "id": intruder.get("id"),
+                "zone_id": intruder.get("zone_id"),
+                "timestamp": intruder.get("timestamp"),
+                "confidence": intruder.get("confidence", 0.9),
+                "details": intruder.get("details"),
+                "threat_level": intruder.get("threat_level", "HIGH"),
+                "status": "active"
+            })
+    return intruders
+
+intruders_db = init_intruders_from_collected()
 
 devices_db = {
     "led_status": False,
@@ -94,7 +161,6 @@ devices_db = {
     "lastUpdated": datetime.now()
 }
 
-intruders_db: List[Dict] = []
 alerts_db: List[Dict] = []
 
 # ============= SENSOR ENDPOINTS =============
@@ -103,7 +169,7 @@ alerts_db: List[Dict] = []
 async def get_sensors():
     """
     GET /api/sensors
-    Retrieve current sensor readings
+    Retrieve current sensor readings from collected data
     """
     return {
         "ultrasonic": sensors_db["ultrasonic"],
@@ -111,7 +177,8 @@ async def get_sensors():
         "humidity": sensors_db["humidity"],
         "signal": sensors_db["signal"],
         "timestamp": sensors_db["timestamp"].isoformat(),
-        "zone_id": sensors_db["zone_id"]
+        "zone_id": sensors_db["zone_id"],
+        "data_source": "Collected sensor data from sensor_data_collected.json"
     }
 
 @app.post("/api/sensors", tags=["Sensors"])
@@ -268,10 +335,11 @@ async def control_multiple_devices(control: DeviceControl):
 async def get_zones():
     """
     GET /api/zones
-    Get all security zones
+    Get all security zones from collected data
     """
     return {
         "zones": zones_db,
+        "data_source": "Zone status from sensor_data_collected.json",
         "timestamp": datetime.now().isoformat()
     }
 
@@ -315,11 +383,12 @@ async def update_zone(zone_id: str, zone_data: ZoneData):
 async def get_intruders():
     """
     GET /api/intruders
-    Get all detected intruders
+    Get all detected intruders from collected data
     """
     return {
         "count": len(intruders_db),
         "intruders": intruders_db,
+        "data_source": "Real-time intruder detections from sensor_data_collected.json",
         "timestamp": datetime.now().isoformat()
     }
 
@@ -443,7 +512,7 @@ async def clear_alert(alert_id: str):
 async def get_dashboard():
     """
     GET /api/dashboard
-    Get complete dashboard data
+    Get complete dashboard data from collected sensor readings
     """
     return {
         "sensors": {
@@ -451,7 +520,8 @@ async def get_dashboard():
             "temperature": sensors_db["temperature"],
             "humidity": sensors_db["humidity"],
             "signal": sensors_db["signal"],
-            "timestamp": sensors_db["timestamp"].isoformat()
+            "timestamp": sensors_db["timestamp"].isoformat(),
+            "zone_id": sensors_db["zone_id"]
         },
         "devices": {
             "led_status": devices_db["led_status"],
@@ -462,12 +532,14 @@ async def get_dashboard():
         "zones": zones_db,
         "intruders": {
             "count": len(intruders_db),
-            "total": len(intruders_db)
+            "total": len(intruders_db),
+            "items": intruders_db[:5]  # Latest 5
         },
         "alerts": {
             "count": len(alerts_db),
             "total": len(alerts_db)
         },
+        "data_source": "Real-time collected sensor data (JSON)" if collected_data else "Mock data",
         "timestamp": datetime.now().isoformat()
     }
 
@@ -487,6 +559,96 @@ async def get_dashboard_summary():
         "intruders_detected": intruder_count,
         "zones_at_risk": critical_zones,
         "active_devices": sum([devices_db["led_status"], devices_db["buzzer_status"], devices_db["servo_status"]]),
+        "timestamp": datetime.now().isoformat()
+    }
+
+# ============= COLLECTED DATA ENDPOINTS =============
+
+def load_collected_data():
+    """Load collected sensor data from JSON file"""
+    try:
+        json_path = os.path.join(os.path.dirname(__file__), "sensor_data_collected.json")
+        with open(json_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {"error": "Collected data file not found"}
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON format"}
+
+@app.get("/api/collected-data", tags=["Collected Data"])
+async def get_collected_data():
+    """
+    GET /api/collected-data
+    Get all collected sensor data from real-time readings
+    """
+    data = load_collected_data()
+    return {
+        "status": "success",
+        "data": data,
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.get("/api/collected-data/zones", tags=["Collected Data"])
+async def get_collected_zones():
+    """
+    GET /api/collected-data/zones
+    Get collected data by zones
+    """
+    data = load_collected_data()
+    zones = data.get("zones", [])
+    return {
+        "status": "success",
+        "zones": zones,
+        "total_zones": len(zones),
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.get("/api/collected-data/zones/{zone_id}", tags=["Collected Data"])
+async def get_zone_collected_data(zone_id: str):
+    """
+    GET /api/collected-data/zones/{zone_id}
+    Get collected data for specific zone
+    """
+    data = load_collected_data()
+    zones = data.get("zones", [])
+    zone_data = next((z for z in zones if z["zone_id"] == zone_id), None)
+    
+    if not zone_data:
+        raise HTTPException(status_code=404, detail=f"Zone {zone_id} not found in collected data")
+    
+    return {
+        "status": "success",
+        "zone": zone_data,
+        "total_readings": len(zone_data.get("readings", [])),
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.get("/api/collected-data/intruders", tags=["Collected Data"])
+async def get_collected_intruders():
+    """
+    GET /api/collected-data/intruders
+    Get all collected intruder detections
+    """
+    data = load_collected_data()
+    intruders = data.get("intruder_detections", [])
+    return {
+        "status": "success",
+        "intruders": intruders,
+        "total_detections": len(intruders),
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.get("/api/collected-data/summary", tags=["Collected Data"])
+async def get_collected_summary():
+    """
+    GET /api/collected-data/summary
+    Get summary statistics of collected data
+    """
+    data = load_collected_data()
+    return {
+        "status": "success",
+        "summary": data.get("summary_statistics", {}),
+        "metadata": data.get("metadata", {}),
         "timestamp": datetime.now().isoformat()
     }
 
@@ -524,6 +686,21 @@ async def startup_event():
     print("✓ WSN Backend started successfully")
     print(f"✓ Listening on port 8000")
     print(f"✓ API Documentation: http://localhost:8000/docs")
+    
+    # Load and display collected data info
+    if collected_data:
+        zones_count = len(collected_data.get('zones', []))
+        total_readings = collected_data.get('summary_statistics', {}).get('total_readings', 0)
+        intruders_count = len(collected_data.get('intruder_detections', []))
+        print(f"\n📊 Loaded Collected Data:")
+        print(f"   ✓ {zones_count} monitoring zones")
+        print(f"   ✓ {total_readings} sensor readings")
+        print(f"   ✓ {intruders_count} intruder detections")
+        print(f"   ✓ Collection Date: {collected_data.get('metadata', {}).get('collection_date', 'N/A')}")
+        print(f"\n🔗 Frontend Connection: http://localhost:5173")
+        print(f"📡 Data Flow: JSON File → Backend → Frontend")
+    else:
+        print("⚠ No collected data file found - using default mock data")
 
 if __name__ == "__main__":
     import uvicorn

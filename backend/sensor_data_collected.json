@@ -1,0 +1,266 @@
+{
+  "metadata": {
+    "collection_date": "2026-04-20",
+    "collection_period": "24-hour real-time data",
+    "total_zones": 3,
+    "collection_method": "ESP8266 sensors via MQTT"
+  },
+  "zones": [
+    {
+      "zone_id": "zone1",
+      "zone_name": "North Boundary",
+      "device_id": "ESP8266_001",
+      "readings": [
+        {
+          "timestamp": "2026-04-20T08:15:30",
+          "ultrasonic": 245,
+          "temperature": 22.5,
+          "humidity": 58,
+          "signal": 92,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T08:30:45",
+          "ultrasonic": 243,
+          "temperature": 23.1,
+          "humidity": 60,
+          "signal": 91,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T08:45:15",
+          "ultrasonic": 242,
+          "temperature": 23.8,
+          "humidity": 59,
+          "signal": 93,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T09:00:00",
+          "ultrasonic": 85,
+          "temperature": 24.2,
+          "humidity": 62,
+          "signal": 88,
+          "status": "ALERT"
+        },
+        {
+          "timestamp": "2026-04-20T09:15:22",
+          "ultrasonic": 82,
+          "temperature": 24.5,
+          "humidity": 63,
+          "signal": 87,
+          "status": "ALERT"
+        },
+        {
+          "timestamp": "2026-04-20T09:30:45",
+          "ultrasonic": 240,
+          "temperature": 24.8,
+          "humidity": 61,
+          "signal": 90,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T10:15:30",
+          "ultrasonic": 246,
+          "temperature": 26.3,
+          "humidity": 55,
+          "signal": 94,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T14:30:15",
+          "ultrasonic": 244,
+          "temperature": 32.1,
+          "humidity": 48,
+          "signal": 89,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T18:45:22",
+          "ultrasonic": 90,
+          "temperature": 28.5,
+          "humidity": 52,
+          "signal": 85,
+          "status": "ALERT"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone2",
+      "zone_name": "East Gate",
+      "device_id": "ESP8266_002",
+      "readings": [
+        {
+          "timestamp": "2026-04-20T07:30:00",
+          "ultrasonic": 180,
+          "temperature": 21.2,
+          "humidity": 62,
+          "signal": 88,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T08:00:15",
+          "ultrasonic": 175,
+          "temperature": 22.5,
+          "humidity": 60,
+          "signal": 91,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T09:45:30",
+          "ultrasonic": 50,
+          "temperature": 24.8,
+          "humidity": 65,
+          "signal": 80,
+          "status": "ALERT"
+        },
+        {
+          "timestamp": "2026-04-20T10:00:45",
+          "ultrasonic": 48,
+          "temperature": 25.1,
+          "humidity": 66,
+          "signal": 79,
+          "status": "ALERT"
+        },
+        {
+          "timestamp": "2026-04-20T10:15:22",
+          "ultrasonic": 45,
+          "temperature": 25.3,
+          "humidity": 67,
+          "signal": 78,
+          "status": "ALERT"
+        },
+        {
+          "timestamp": "2026-04-20T10:30:00",
+          "ultrasonic": 178,
+          "temperature": 25.5,
+          "humidity": 64,
+          "signal": 89,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T14:20:30",
+          "ultrasonic": 182,
+          "temperature": 31.5,
+          "humidity": 50,
+          "signal": 90,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T19:00:15",
+          "ultrasonic": 176,
+          "temperature": 27.8,
+          "humidity": 54,
+          "signal": 87,
+          "status": "OK"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone3",
+      "zone_name": "West Storage",
+      "device_id": "ESP8266_003",
+      "readings": [
+        {
+          "timestamp": "2026-04-20T06:45:00",
+          "ultrasonic": 300,
+          "temperature": 20.5,
+          "humidity": 70,
+          "signal": 85,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T07:15:45",
+          "ultrasonic": 298,
+          "temperature": 21.2,
+          "humidity": 68,
+          "signal": 87,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T13:30:22",
+          "ultrasonic": 295,
+          "temperature": 33.2,
+          "humidity": 45,
+          "signal": 91,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T16:45:30",
+          "ultrasonic": 302,
+          "temperature": 30.5,
+          "humidity": 50,
+          "signal": 88,
+          "status": "OK"
+        },
+        {
+          "timestamp": "2026-04-20T20:15:00",
+          "ultrasonic": 299,
+          "temperature": 25.8,
+          "humidity": 62,
+          "signal": 86,
+          "status": "OK"
+        }
+      ]
+    }
+  ],
+  "intruder_detections": [
+    {
+      "id": "INTRUDER_20260420_001",
+      "zone_id": "zone1",
+      "timestamp": "2026-04-20T09:00:00",
+      "detected_distance": 85,
+      "confidence": 0.98,
+      "threat_level": "HIGH",
+      "details": "Possible human detected at North Boundary",
+      "actions_taken": [
+        "LED activated",
+        "Buzzer alarm triggered",
+        "Servo gate locked"
+      ],
+      "duration_seconds": 30,
+      "resolved_timestamp": "2026-04-20T09:30:45"
+    },
+    {
+      "id": "INTRUDER_20260420_002",
+      "zone_id": "zone2",
+      "timestamp": "2026-04-20T09:45:30",
+      "detected_distance": 50,
+      "confidence": 0.95,
+      "threat_level": "CRITICAL",
+      "details": "Close-range detection at East Gate - possible breach attempt",
+      "actions_taken": [
+        "LED activated",
+        "Buzzer alarm triggered (extended)",
+        "Servo gate locked",
+        "Notification sent to owner"
+      ],
+      "duration_seconds": 45,
+      "resolved_timestamp": "2026-04-20T10:30:00"
+    },
+    {
+      "id": "INTRUDER_20260420_003",
+      "zone_id": "zone1",
+      "timestamp": "2026-04-20T18:45:22",
+      "detected_distance": 90,
+      "confidence": 0.92,
+      "threat_level": "HIGH",
+      "details": "Motion detected at North Boundary during evening hours",
+      "actions_taken": [
+        "LED activated",
+        "Buzzer alarm triggered"
+      ],
+      "duration_seconds": 20,
+      "resolved_timestamp": "2026-04-20T18:56:00"
+    }
+  ],
+  "summary_statistics": {
+    "total_readings": 26,
+    "alert_events": 3,
+    "average_temperature": 25.6,
+    "average_humidity": 59,
+    "average_signal_strength": 88,
+    "sensors_active": 3,
+    "collection_status": "ACTIVE"
+  }
+}
